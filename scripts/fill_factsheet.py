@@ -76,12 +76,11 @@ def fill(data_path, template_path, out_path, sheet_name):
     wb = load_workbook(template_path)
     ws = wb[sheet_name]
     
-    # Set dynamic sheet name (max 31 chars)
     ws.title = data['entity'][:31]
     ws["A1"] = f"Fact Sheet - {data['entity']}"
 
-    # Track rows we want to delete to keep the format clean
-    rows_to_delete = []
+    # Track rows we want to HIDE (not delete) to preserve formula integrity
+    rows_to_hide = []
 
     # --- Headquarters / descriptions ---
     note(ws, "C3", f_["hq_india_entity"]["value"], f_["hq_india_entity"]["source"])
@@ -133,10 +132,10 @@ def fill(data_path, template_path, out_path, sheet_name):
     if n_needed > n_available:
         raise ValueError(f"Run safe_insert_rows.py first. Needed: {n_needed}, Available: {n_available}")
     
-    # Mark unused shareholding rows for deletion
+    # Mark unused shareholding rows (like the blank separator) to be hidden
     if n_needed < n_available:
         for i in range(n_needed, n_available):
-            rows_to_delete.append(start_row + i)
+            rows_to_hide.append(start_row + i)
 
     for i, r in enumerate(rows):
         rn = start_row + i
@@ -156,15 +155,14 @@ def fill(data_path, template_path, out_path, sheet_name):
     rpt_header_row = total_row + 2 
     rpt_start = rpt_header_row + 1
     
-    # Standard template has 7 RPT placeholders. 
     rpt_capacity = 7
     if len(items) < rpt_capacity:
         for i in range(len(items), rpt_capacity):
-            rows_to_delete.append(rpt_start + i)
+            rows_to_hide.append(rpt_start + i)
             
     for i, item in enumerate(items):
         if i >= rpt_capacity:
-            break # Failsafe if API extracts more than 7 without rows being added
+            break 
         rn = rpt_start + i
         ws[f"C{rn}"] = item["label"]
         ws[f"D{rn}"] = item["value_fy25"]
@@ -185,11 +183,10 @@ def fill(data_path, template_path, out_path, sheet_name):
     lit_start = lit_header_row + 1
     lit_items = f_["litigation"]["items"]
     
-    # Standard template has 2 litigation placeholders
     lit_capacity = 2
     if len(lit_items) < lit_capacity:
         for i in range(len(lit_items), lit_capacity):
-            rows_to_delete.append(lit_start + i)
+            rows_to_hide.append(lit_start + i)
             
     for i, it in enumerate(lit_items):
         if i >= lit_capacity:
@@ -208,10 +205,22 @@ def fill(data_path, template_path, out_path, sheet_name):
     note(ws, f"C{website_row + 1}", f_["linkedin"]["value"], f_["linkedin"]["source"])
 
     # ===================================================================
-    # CLEANUP: Delete all unused rows in reverse order to preserve layout
+    # CLEANUP: Hide and clear unused rows to prevent #REF! and #DIV/0!
     # ===================================================================
-    for r in sorted(rows_to_delete, reverse=True):
-        ws.delete_rows(r)
+    for r in rows_to_hide:
+        # Clear the values so they don't interfere with SUM formulas
+        for col in ["C", "D", "E", "F", "G", "H", "I"]:
+            cell = ws[f"{col}{r}"]
+            
+            # Use try/except to gracefully skip read-only MergedCell objects
+            try:
+                cell.value = None
+                cell.comment = None
+            except AttributeError:
+                pass 
+                
+        # Hide the row completely from view
+        ws.row_dimensions[r].hidden = True
 
     wb.save(out_path)
     return out_path

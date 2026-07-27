@@ -14,14 +14,12 @@ from typing import List, Optional
 from google import genai
 from google.genai import types
 
-from openpyxl import load_workbook
-
-# Import updated scripts
+# Use the scripts folder for imports
 try:
     from scripts import fill_factsheet
     from scripts import safe_insert_rows
 except ImportError as e:
-    st.error(f"Failed to import required scripts. Error: {e}")
+    st.error(f"Failed to import required scripts from the 'scripts' folder. Error: {e}")
     st.stop()
 
 st.set_page_config(page_title="EY TP BD Automator", layout="wide")
@@ -120,7 +118,7 @@ def extract_bd_data(pdf_path: str, api_key: str, company_name: str, model_name: 
             if text:
                 extracted_text += text + "\n"
     
-    with open("SKILL_2.md", "r") as f:
+    with open("SKILL_3.md", "r") as f:
         system_prompt = f.read()
 
     config = types.GenerateContentConfig(
@@ -159,18 +157,18 @@ def extract_bd_data(pdf_path: str, api_key: str, company_name: str, model_name: 
 # 3. STREAMLIT UI 
 # =====================================================================
 
-st.title("📊 TP Business Description Automator")
+st.title("TP BD Automator")
 
 with st.sidebar:
-    st.header("Settings")
-    api_key = st.text_input("Enter Gemini API Key", type="password")
-    model_choice = st.text_input("Model String", value="gemini-flash-lite-latest")
+    st.header("⚙️ Settings")
+    api_key = st.text_input("Gemini API Key", type="password")
+    model_choice = st.text_input("Model", value="gemini-flash-latest")
 
 col1, col2 = st.columns(2)
 with col1:
-    excel_template = st.file_uploader("Upload BD Format (.xlsx)", type=["xlsx"])
+    excel_template = st.file_uploader("Upload BD Format", type=["xlsx"])
 with col2:
-    pdf_files = st.file_uploader("Upload ARs (.pdf)", type=["pdf"], accept_multiple_files=True)
+    pdf_files = st.file_uploader("Upload ARs", type=["pdf"], accept_multiple_files=True)
 
 if st.button("Start Bulk Extraction", type="primary"):
     if not api_key:
@@ -186,6 +184,8 @@ if st.button("Start Bulk Extraction", type="primary"):
             with open(template_path, "wb") as f:
                 f.write(excel_template.getvalue())
 
+            from openpyxl import load_workbook
+            
             for i, pdf_file in enumerate(pdf_files):
                 company_name = pdf_file.name.replace('.pdf', '')
                 
@@ -253,4 +253,4 @@ if st.button("Start Bulk Extraction", type="primary"):
                 
                 progress_bar.progress((i + 1) / len(pdf_files))
                 
-            status_text.text("✅ Processing Complete!")
+            status_text.text("Processing Complete!")
