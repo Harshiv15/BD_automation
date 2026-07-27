@@ -14,12 +14,11 @@ from typing import List, Optional
 from google import genai
 from google.genai import types
 
-# Use the scripts folder for imports
 try:
-    from scripts import fill_factsheet
-    from scripts import safe_insert_rows
+    import fill_factsheet
+    import safe_insert_rows
 except ImportError as e:
-    st.error(f"Failed to import required scripts from the 'scripts' folder. Error: {e}")
+    st.error(f"Failed to import required scripts. Error: {e}")
     st.stop()
 
 st.set_page_config(page_title="EY TP BD Automator", layout="wide")
@@ -118,7 +117,7 @@ def extract_bd_data(pdf_path: str, api_key: str, company_name: str, model_name: 
             if text:
                 extracted_text += text + "\n"
     
-    with open("SKILL_3.md", "r") as f:
+    with open("SKILL.md", "r") as f:
         system_prompt = f.read()
 
     config = types.GenerateContentConfig(
