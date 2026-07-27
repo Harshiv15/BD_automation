@@ -32,6 +32,10 @@ How this script avoids that:
 Net effect: the sheet looks and behaves exactly like the original, just
 with `delta` extra blank (but correctly-styled) rows available starting at
 `threshold`, ready for the fill script to write real values into.
+
+Shifts cells down to create a gap, updates formula references, and 
+EXPLICITLY copies the formatting of the row above the gap into the new rows 
+so they match the table data rather than the 'Total' row below.
 ============================================================================
 
 Usage as a library:
@@ -40,17 +44,11 @@ Usage as a library:
 """
 import re
 from copy import copy
-
 from openpyxl import load_workbook
 
-# Matches A1-style cell references with optional $ column/row anchors,
-# e.g. "D12", "$D$45", "F13". Used to find-and-shift references inside
-# formula strings.
 CELL_REF_RE = re.compile(r'(\$?)([A-Z]{1,3})(\$?)(\d+)')
 
-
 def shift_formula(formula, threshold, delta):
-    """Shift every row reference >= threshold by delta, inside a formula string."""
     def repl(m):
         col_abs, col, row_abs, row = m.groups()
         row_n = int(row)
@@ -59,32 +57,31 @@ def shift_formula(formula, threshold, delta):
         return f"{col_abs}{col}{row_abs}{row_n}"
     return CELL_REF_RE.sub(repl, formula)
 
-
 def shift_ref(ref, threshold, delta):
-    """Same shifting logic, applied to a plain range string like 'B40:B45'."""
     return shift_formula(ref, threshold, delta)
 
-
 def insert_rows_safe(src_path, out_path, sheet_name, threshold, delta):
+    if delta <= 0:
+        # Nothing to insert, just save and return
+        wb = load_workbook(src_path)
+        wb.save(out_path)
+        return out_path
+
     wb = load_workbook(src_path, data_only=False)
     ws = wb[sheet_name]
 
     max_row = ws.max_row
     max_col = ws.max_column
 
-    # --- 1. Snapshot merges, then remove them (can't move cells under a
-    #     live merge without Excel complaining) ---
+    # 1. Snapshot merges
     old_merges = [str(r) for r in ws.merged_cells.ranges]
     for r in list(ws.merged_cells.ranges):
         ws.unmerge_cells(str(r))
 
-    # --- 2. Snapshot row heights (indexed by row number) ---
+    # 2. Snapshot row heights
     old_row_heights = {r: dim.height for r, dim in ws.row_dimensions.items() if dim.height is not None}
 
-    # --- 3. Snapshot EVERY cell's value + full style, whether or not it
-    #     currently holds a value. This is the fix for the earlier bug
-    #     where blank-but-styled cells (e.g. border-only table cells) were
-    #     never captured and so never moved with the rest of their row. ---
+    # 3. Snapshot EVERY cell
     snapshot = {}
     for row in ws.iter_rows(min_row=1, max_row=max_row, max_col=max_col):
         for cell in row:
@@ -98,15 +95,12 @@ def insert_rows_safe(src_path, out_path, sheet_name, threshold, delta):
                 "protection": copy(cell.protection),
             }
 
-    # --- 4. Clear all cell values (styles get overwritten in step 5 anyway,
-    #     but clearing values first avoids any stale-formula evaluation
-    #     issues while we rebuild) ---
+    # 4. Clear all
     for row in ws.iter_rows(min_row=1, max_row=max_row + delta + 5, max_col=max_col):
         for cell in row:
             cell.value = None
 
-    # --- 5. Re-write every cell at its shifted position with its original
-    #     style, and shift any formula text so references stay correct ---
+    # 5. Re-write shifted
     for (r, c), info in snapshot.items():
         new_r = r + delta if r >= threshold else r
         cell = ws.cell(row=new_r, column=c)
@@ -121,28 +115,28 @@ def insert_rows_safe(src_path, out_path, sheet_name, threshold, delta):
         cell.number_format = info["number_format"]
         cell.protection = info["protection"]
 
-    # --- 6. Re-create row heights at shifted row numbers ---
+    # 6. EXPLICIT FORMAT FIX: Copy styles from the row *above* the gap (threshold - 1)
+    # This prevents the new rows from bleeding the "Total" row formatting.
+    style_source_row = threshold - 1
+    for new_r in range(threshold, threshold + delta):
+        for c in range(1, max_col + 1):
+            src_info = snapshot.get((style_source_row, c))
+            if src_info:
+                tgt_cell = ws.cell(row=new_r, column=c)
+                tgt_cell.font = copy(src_info["font"])
+                tgt_cell.fill = copy(src_info["fill"])
+                tgt_cell.border = copy(src_info["border"])
+                tgt_cell.alignment = copy(src_info["alignment"])
+                tgt_cell.number_format = src_info["number_format"]
+
+    # 7. Re-create row heights & merges
     for r, height in old_row_heights.items():
         new_r = r + delta if r >= threshold else r
         ws.row_dimensions[new_r].height = height
 
-    # --- 7. Re-create merges, shifted ---
     for m in old_merges:
         new_m = shift_ref(m, threshold, delta)
         ws.merge_cells(new_m)
 
     wb.save(out_path)
     return out_path
-
-
-if __name__ == "__main__":
-    import argparse
-    p = argparse.ArgumentParser()
-    p.add_argument("--src", required=True)
-    p.add_argument("--out", required=True)
-    p.add_argument("--sheet", required=True)
-    p.add_argument("--threshold", type=int, required=True)
-    p.add_argument("--delta", type=int, required=True)
-    args = p.parse_args()
-    insert_rows_safe(args.src, args.out, args.sheet, args.threshold, args.delta)
-    print(f"Saved {args.out}")

@@ -14,12 +14,14 @@ from typing import List, Optional
 from google import genai
 from google.genai import types
 
-# Import your working Excel scripts
+from openpyxl import load_workbook
+
+# Import updated scripts
 try:
     from scripts import fill_factsheet
     from scripts import safe_insert_rows
 except ImportError as e:
-    st.error(f"Failed to import required scripts. Ensure 'fill_factsheet.py' and 'safe_insert_rows.py' are accessible. Error: {e}")
+    st.error(f"Failed to import required scripts. Error: {e}")
     st.stop()
 
 st.set_page_config(page_title="EY TP BD Automator", layout="wide")
@@ -64,11 +66,11 @@ class RelatedPartyTransactions(BaseModel):
     source: str
 
 class LitigationItem(BaseModel):
-    nature_of_dues: str
+    nature_of_dues: str | None
     amount_demanded_lakhs: float | int | None
     amount_paid_lakhs: float | int | None
-    period: str
-    forum: str
+    period: str | None
+    forum: str | None
 
 class Litigation(BaseModel):
     items: List[LitigationItem]
@@ -102,30 +104,25 @@ class CompanyData(BaseModel):
     entity: str = Field(description="Name of the company")
     fields: ExtractedFields
 
+
 # =====================================================================
-# 2. THE LLM EXTRACTION FUNCTION (TEXT-ONLY FAILSAFE)
+# 2. THE DUAL-EXTRACTION ENGINE (TEXT FIRST, VISION BACKUP)
 # =====================================================================
 
-def extract_bd_data(pdf_path: str, api_key: str, company_name: str) -> dict:
-    """Extracts text locally, sends pure text to Gemini, and returns a validated dict."""
-    
-    # 1. Initialize Client
+def extract_bd_data(pdf_path: str, api_key: str, company_name: str, model_name: str) -> dict:
     client = genai.Client(api_key=api_key)
     
-    # 2. Extract text locally (Bypasses Google File API to avoid Multimodal 429s)
+    # Try text extraction first
     extracted_text = ""
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
-            extracted_text += (page.extract_text() or "") + "\n"
+            text = page.extract_text()
+            if text:
+                extracted_text += text + "\n"
     
-    # 3. Read the SKILL.md prompt
-    try:
-        with open("SKILL.md", "r") as f:
-            system_prompt = f.read()
-    except FileNotFoundError:
-        raise Exception("SKILL.md not found in the same directory.")
+    with open("SKILL_2.md", "r") as f:
+        system_prompt = f.read()
 
-    # 4. Configure the API call (Search tool removed to avoid Free Tier 429s)
     config = types.GenerateContentConfig(
         system_instruction=system_prompt,
         temperature=0.0,
@@ -133,28 +130,41 @@ def extract_bd_data(pdf_path: str, api_key: str, company_name: str) -> dict:
         response_schema=CompanyData,
     )
 
-    user_prompt = f"Please extract the Business Description data for {company_name} from the following Annual Report text:\n\n{extracted_text}"
-
-    # 5. Call the Model
-    # REPLACE THIS STRING WITH THE ONE YOU FOUND IN check_models.py
-    response = client.models.generate_content(
-        model='gemini-flash-lite-latest', 
-        contents=user_prompt,
-        config=config
-    )
+    # HEURISTIC FALLBACK: If < 2000 chars, it's a scanned image. Use File API (Vision).
+    if len(extracted_text.strip()) < 2000:
+        st.info(f"[{company_name}] Detected scanned/image PDF. Falling back to Gemini Vision API (Costs more quota)...")
+        uploaded_file = client.files.upload(file=pdf_path)
+        user_prompt = f"Please extract the Business Description data for {company_name} from the attached Annual Report PDF."
+        
+        response = client.models.generate_content(
+            model=model_name,
+            contents=[uploaded_file, user_prompt],
+            config=config
+        )
+        client.files.delete(name=uploaded_file.name) # cleanup
+        
+    else:
+        st.info(f"[{company_name}] Text successfully extracted ({len(extracted_text)} chars). Using Text API (Saves quota)...")
+        user_prompt = f"Please extract the Business Description data for {company_name} from the following Annual Report text:\n\n{extracted_text}"
+        
+        response = client.models.generate_content(
+            model=model_name, 
+            contents=user_prompt,
+            config=config
+        )
 
     return json.loads(response.text)
 
 # =====================================================================
-# 3. STREAMLIT UI & PROCESSING PIPELINE
+# 3. STREAMLIT UI 
 # =====================================================================
 
 st.title("📊 TP Business Description Automator")
-st.markdown("Upload Annual Reports to extract financial data and populate the BD Excel format.")
 
 with st.sidebar:
     st.header("Settings")
     api_key = st.text_input("Enter Gemini API Key", type="password")
+    model_choice = st.text_input("Model String", value="gemini-flash-lite-latest")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -185,7 +195,7 @@ if st.button("Start Bulk Extraction", type="primary"):
                 
                 status_text.text(f"Processing {company_name}... Extracting text & Querying LLM...")
                 try:
-                    structured_data = extract_bd_data(temp_pdf_path, api_key, company_name)
+                    structured_data = extract_bd_data(temp_pdf_path, api_key, company_name, model_choice)
                     
                     json_path = os.path.join(temp_dir, f"{company_name}_extracted.json")
                     with open(json_path, "w") as f:
@@ -200,18 +210,20 @@ if st.button("Start Bulk Extraction", type="primary"):
                 
                 try:
                     template_to_use = template_path
+                    wb = load_workbook(template_path)
+                    sheet_name = wb.sheetnames[0]
                     
-                    if len(structured_data["fields"]["shareholding"]["rows"]) > 2: 
+                    # Safe Expand Shareholding Table if necessary
+                    required_rows = len(structured_data["fields"]["shareholding"]["rows"])
+                    if required_rows > 2: 
                         status_text.text(f"Safely expanding Shareholding table...")
                         expanded_template_path = os.path.join(temp_dir, "expanded_template.xlsx")
                         
-                        required_rows = len(structured_data["fields"]["shareholding"]["rows"])
                         delta = max(0, required_rows - 2) 
-                        
                         safe_insert_rows.insert_rows_safe(
                             src_path=template_path, 
                             out_path=expanded_template_path, 
-                            sheet_name="Copy of Thomas Cook", 
+                            sheet_name=sheet_name, 
                             threshold=43, 
                             delta=delta
                         )
@@ -221,7 +233,7 @@ if st.button("Start Bulk Extraction", type="primary"):
                         data_path=json_path, 
                         template_path=template_to_use, 
                         out_path=output_excel_path, 
-                        sheet_name="Copy of Thomas Cook" 
+                        sheet_name=sheet_name 
                     )
                     
                 except Exception as e:
