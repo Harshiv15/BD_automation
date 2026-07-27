@@ -1,0 +1,122 @@
+{
+  "entity": "TIPS Music Limited (formerly Tips Industries Limited)",
+  "fy": "FY 2025",
+  "fields": {
+    "hq_india_entity": {
+      "value": "601, Durga Chambers, 6th Floor, Linking Road, Khar West, Mumbai 400 052, Maharashtra, India",
+      "confidence": "high",
+      "source": "Registered office address, Corporate Information / BRSR Section A, p.4-5 and p.61-ish"
+    },
+    "hq_group": {
+      "value": "Not applicable in the Thomas Cook sense - TIPS has no corporate parent/holding company. Promoters are individuals: Kumar S. Taurani, Ramesh S. Taurani, Girish K. Taurani (the Taurani family), holding 64.15% jointly. The Company itself confirms it has no holding company.",
+      "confidence": "flagged",
+      "source": "Note 31 - 'The Company does not have holding company or subsidiary'; Related Party Disclosure Note 38(7) lists KMP as Kumar/Ramesh/Girish Taurani",
+      "flag": "This field's format assumes a corporate group HQ (works for Thomas Cook/Fairfax). TIPS is promoter-family-controlled with no parent entity - recommend the skill detect this pattern (no holding company disclosed) and switch to a promoter-description format rather than forcing a 'headquarters' answer."
+    },
+    "company_description": {
+      "value": "TIPS Music Limited (formerly Tips Industries Limited) is engaged in the acquisition and exploitation of music rights, with a large and diversified music library of 34,000+ songs across major genres and 25+ languages, licensed to leading global digital platforms (YouTube, Spotify, JioSaavn, Apple Music, Amazon Prime Music, and others). The company also has a legacy in Hindi and Punjabi film production (its Film Division was demerged in FY22). It is listed on the BSE and NSE, incorporated in 1996 (predecessor entity from 1975), headquartered in Mumbai, and operates as a single reportable business segment (Music).",
+      "confidence": "high",
+      "source": "Notes to Financial Statements (Note 1, entity background), p.~130; Directors' Report/MD&A on nature of industry; Segment Reporting Note 38(8). Paraphrased, not quoted, from the AR."
+    },
+    "group_description": {
+      "value": "No separate corporate group description applicable - see hq_group note. Related entity of note: Tips Films Limited (India), an enterprise significantly influenced by the promoter/KMP family, engaged in film production and supplying audio-video content rights to TIPS Music (Rs 968.00 lakhs FY25 / Rs 1,433.20 lakhs FY24) - a domestic related party, not a foreign AE.",
+      "confidence": "medium",
+      "source": "Related Party Disclosure Note 38(7), p.~154-155"
+    },
+    "statutory_auditors": {
+      "value": "M/s MSKA & Associates, Chartered Accountants (ICAI Firm Registration No. 105047W)",
+      "confidence": "high",
+      "source": "Directors' Report (Statutory Auditors appointment) and financial statement signature block, p.~1625 area / signature page"
+    },
+    "standalone_turnover_fy25_lakhs": {
+      "value": 32967.96,
+      "confidence": "high",
+      "source": "Standalone Statement of Profit and Loss, Total Income: Rs. 32,967.96 lakhs. Source already states amounts in INR Lakhs - no unit conversion needed (unlike Thomas Cook, which was in Rs. Millions).",
+      "unit_note": "Auto-detected unit from statement header: 'Amount in INR Lakhs unless otherwise stated'."
+    },
+    "standalone_turnover_fy24_lakhs": {"value": 25595.82, "confidence": "high", "source": "Same statement, prior year Total Income column"},
+    "standalone_total_cost_fy25_lakhs": {"value": 10649.73, "confidence": "high", "source": "Standalone Statement of Profit and Loss, Total Expenses, FY25"},
+    "standalone_total_cost_fy24_lakhs": {"value": 8543.10, "confidence": "high", "source": "Same statement, prior year Total Expenses"},
+    "standalone_pbt_fy25_lakhs": {
+      "value": 22318.23,
+      "confidence": "high",
+      "source": "Standalone Statement of Profit and Loss, Profit before Tax, FY25 - reconciles exactly to Total Income minus Total Expenses (32,967.96 - 10,649.73 = 22,318.23), unlike Thomas Cook which had an exceptional item causing a mismatch. Safe to use the template's existing formula (=D12-D13) here rather than hardcoding."
+    },
+    "standalone_pbt_fy24_lakhs": {"value": 17052.72, "confidence": "high", "source": "Same statement, prior year PBT - also reconciles exactly (25,595.82 - 8,543.10 = 17,052.72)"},
+    "consolidated_summary": {
+      "value": "Not Applicable - the Company has no subsidiaries, associates, or joint ventures and prepares standalone financial statements only.",
+      "confidence": "high",
+      "source": "Directors' Report: 'The Company does not have any subsidiary, associate and joint venture'; Note V (Holding, Subsidiary and Associate Companies): 'The Company doesn't have any holding/subsidiary/associate companies or joint ventures.'"
+    },
+    "pe_investment": {
+      "value": "No",
+      "confidence": "medium",
+      "source": "No mention of 'permanent establishment' found via full-text search. Same caveat as Thomas Cook - absence of a keyword hit isn't conclusive; confirm against TP study/prior filings.",
+      "flag": "Confirm independently."
+    },
+    "ae_revenue_split": {
+      "value": {
+        "ae_revenues_fy25": 0, "ae_revenues_fy24": 0,
+        "domestic_ae_fy25": 0, "domestic_ae_fy24": 0,
+        "export_ae_fy25": 0, "export_ae_fy24": 0,
+        "domestic_third_party_fy25": 9732.9, "domestic_third_party_fy24": null,
+        "export_third_party_fy25": 21335.8, "export_third_party_fy24": null
+      },
+      "confidence": "flagged",
+      "source": "BRSR Section: 'The contribution of exports is 68.66% of total turnover of the company' (FY25 only - no comparable disclosed for FY24), p.~76. Applied 68.66% to Revenue from Operations (Rs 31,068.73 lakhs, NOT Total Income) to get export third-party revenue = Rs 21,335.8 lakhs; remainder Rs 9,732.9 lakhs is domestic third-party.",
+      "flag": "IMPORTANT judgment call: TIPS has no foreign/international related parties in its Note 38(7) disclosure (only Indian entities: Tips Films Limited, Mobify Technology Solutions) - so unlike Thomas Cook, ALL related-party transactions here appear to be domestic, and effectively 0 is entered for every AE row. The large export figure (68.66% of turnover) is licensing revenue to foreign THIRD-PARTY platforms (Spotify, Apple Music, YouTube are not AEs of TIPS), not AE revenue. FY24 split not found - BRSR export-contribution disclosure appears to be current-year-only in this AR; left blank rather than guessed. This company's TP profile (no foreign AEs, but majority-export third-party revenue) is materially different from Thomas Cook's (foreign AE + domestic AE + third-party mix) - worth flagging to the reviewer explicitly since it changes what TP analysis is even relevant here."
+    },
+    "cash_fy25_lakhs": {"value": 4081.09, "confidence": "high", "source": "Standalone Balance Sheet, Cash and cash equivalents, FY25"},
+    "cash_fy24_lakhs": {"value": 4852.29, "confidence": "high", "source": "Same, FY24"},
+    "ae_trade_receivables_fy25_lakhs": {
+      "value": 0,
+      "confidence": "medium",
+      "source": "Trade Receivables note (Note 11, total Rs 2,748.17 lakhs) does not itemize a related-party portion, and the Related Party Disclosure note (38(7)) balances-outstanding section lists Advance to Related Party, Trade Payables, and Security Deposit Receivables involving related parties - but NOT trade receivables. Absence of a disclosed related-party trade receivable balance -> entered as 0 rather than substituting the total receivables figure (a different approach than was used for Thomas Cook, where the AR was less granular and total was used as an explicit proxy - here the AR is granular enough to show related-party balances would have been disclosed if material)."
+    },
+    "ae_trade_receivables_fy24_lakhs": {"value": 0, "confidence": "medium", "source": "Same reasoning, FY24"},
+    "shareholding": {
+      "rows": [
+        {"name": "Promoters and Directors (Taurani family)", "shares_fy25": 82009554, "pct_fy25": 64.15, "shares_fy24": null, "pct_fy24": null, "label_type": "named_holder"},
+        {"name": "Others (<5% equity per shareholder)", "shares_fy25": 45822036, "pct_fy25": 35.85, "shares_fy24": null, "pct_fy24": null, "label_type": "under_5pct_aggregate"}
+      ],
+      "total_shares_fy25": 127831590,
+      "confidence": "high",
+      "source": "Corporate Governance Report, 'Shareholding Pattern as on March 31, 2025', p.~59 - FULL breakdown given (Promoters and Directors, Public, FPI, Mutual Funds, and several smaller categories, summing exactly to 100.00%). No 'Others (not listed in AR)' plug needed here, unlike Thomas Cook, because the AR discloses the complete categorized breakdown rather than only a top-10 list.",
+      "flag": "FY24 comparative shareholding pattern not located in the time available - only FY25 point-in-time table found. Left blank rather than guessed."
+    },
+    "related_party_transactions_lakhs": {
+      "sale_of_services_fy25": null,
+      "other_income_fy25": null,
+      "interest_income_fy25": null,
+      "reimbursement_expenses_fy25": -17.80,
+      "group_management_fees_fy25": null,
+      "cost_of_services_fy25": 968.00,
+      "reimbursements_received_fy25": null,
+      "confidence": "flagged",
+      "source": "Related Party Disclosure Note 38(7), p.~154",
+      "flag": "TIPS's actual related-party transactions don't map cleanly onto this row template (built for a company like Thomas Cook with clear AE service flows). TIPS's disclosed RPT are: rent paid, director remuneration/salaries, sitting fees, reimbursement of expenses (Rs -17.80 lakhs, i.e. net receivable - mapped to 'Reimbursement expenses'), advances against remuneration, and 'Audio Video Rights Expenses' from Tips Films Limited (Rs 968.00 lakhs FY25 / Rs 1,433.20 lakhs FY24) which is the closest match to 'Cost of services' (content licensing cost). No related-party 'Sale of Services', interest income, group management fees, or reimbursements received were found - left blank (not 0) because these categories may simply not apply to this company's related-party profile, which is a different situation from 'looked and found zero'."
+    },
+    "litigation": {
+      "value": "No pending litigation (following the same convention used in the Thomas Cook example, where general contingent liabilities - tax/GST/consumer disputes - were NOT logged in this row, likely because this section is meant for TP-specific/material disputes)",
+      "confidence": "flagged",
+      "contingent_liabilities_found": [
+        {"nature": "FEMA Act matters", "amt_lakhs_fy25": 0, "amt_lakhs_fy24": 90.00},
+        {"nature": "Service tax matter", "amt_lakhs_fy25": 192.02, "amt_lakhs_fy24": 192.02},
+        {"nature": "Income tax matters", "amt_lakhs_fy25": 39.52, "amt_lakhs_fy24": 39.52}
+      ],
+      "source": "Note 38(1)(A) Contingent Liabilities, standalone, p.~131-ish",
+      "flag": "OPEN QUESTION for the reviewer, carried over from the Thomas Cook run: does 'Litigation' in this sheet mean TP-specific disputes only, or any material contingent liability? None of TIPS's contingent liabilities are TP-related, same as Thomas Cook's weren't - consistent with 'No pending litigation' being correct either way here, but flagging the interpretation question again since it affects every future run of this skill."
+    },
+    "countries_presence": {
+      "value": "National: Pan-India operations. International: digital distribution 'worldwide' via global streaming/platform partners (YouTube, Spotify, Apple Music, JioSaavn, Amazon Prime Music, etc.) - no physical international offices/subsidiaries identified.",
+      "confidence": "medium",
+      "source": "BRSR Section, Markets served by the entity: International (No. of Countries) = 'Worldwide', p.~76"
+    },
+    "website": {"value": "https://tips.in/", "confidence": "high", "source": "Corporate Information / BRSR Section A, directly stated in the AR"},
+    "linkedin": {
+      "value": "https://in.linkedin.com/company/tips-industries-limited",
+      "confidence": "medium",
+      "source": "Web search (not in the AR, as expected) - this is the company's main/active LinkedIn page (10,500+ followers). A newer page also exists at linkedin.com/company/tips-music-limited reflecting the FY25 name change, but appeared to have no populated content as of this search - flagging in case the newer URL is preferred going forward."
+    }
+  }
+}
