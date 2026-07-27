@@ -1,5 +1,5 @@
 """
-fill_factsheet_v4.py
+fill_factsheet.py
 
 ============================================================================
 ARCHITECTURE OVERVIEW
@@ -46,7 +46,7 @@ doesn't reconcile with Turnover - Total Cost.
 ============================================================================
 
 Usage:
-    python fill_factsheet_v4.py --data tips_extracted_v3.json \
+    python fill_factsheet.py --data tips_extracted_v3.json \
         --template template_expanded_v2.xlsx --out draft.xlsx \
         --sheet "Copy of Thomas Cook"
 """
