@@ -93,7 +93,9 @@ def fill(data_path, template_path, out_path, sheet_name):
     note(ws, "F12", f_["standalone_turnover_fy24_lakhs"]["value"], f_["standalone_turnover_fy24_lakhs"]["source"])
     note(ws, "D13", f_["standalone_total_cost_fy25_lakhs"]["value"], f_["standalone_total_cost_fy25_lakhs"]["source"])
     note(ws, "F13", f_["standalone_total_cost_fy24_lakhs"]["value"], f_["standalone_total_cost_fy24_lakhs"]["source"])
-    ws["D14"].comment = Comment("PBT left as the template's formula.", AUTHOR)
+    
+    # Updated comment to reflect EY feedback on Turnover vs PBT
+    ws["D14"].comment = Comment("PBT left as the template's formula. Note: Since Turnover now excludes Other Income, this formula (Turnover - Total Cost) will likely not match the AR's reported PBT.", AUTHOR)
 
     # --- Consolidated summary ---
     cons = f_["consolidated_summary"]
@@ -132,7 +134,6 @@ def fill(data_path, template_path, out_path, sheet_name):
     if n_needed > n_available:
         raise ValueError(f"Run safe_insert_rows.py first. Needed: {n_needed}, Available: {n_available}")
     
-    # Mark unused shareholding rows (like the blank separator) to be hidden
     if n_needed < n_available:
         for i in range(n_needed, n_available):
             rows_to_hide.append(start_row + i)
@@ -172,7 +173,7 @@ def fill(data_path, template_path, out_path, sheet_name):
         ws[f"D{rn}"].comment = Comment(comment_text, AUTHOR)
 
     ws["D26"] = 0
-    ws["D26"].comment = Comment(f"AE revenues cross-checked against RPT table. {ae_source}", AUTHOR)
+    ws["D26"].comment = Comment(f"AE revenues (Sale of services to foreign AEs) cross-checked against RPT table. {ae_source}", AUTHOR)
 
     # --- Countries of presence ---
     countries_row = rpt_start + rpt_capacity + 1
@@ -208,7 +209,6 @@ def fill(data_path, template_path, out_path, sheet_name):
     # CLEANUP: Hide and clear unused rows to prevent #REF! and #DIV/0!
     # ===================================================================
     for r in rows_to_hide:
-        # Clear the values so they don't interfere with SUM formulas
         for col in ["C", "D", "E", "F", "G", "H", "I"]:
             cell = ws[f"{col}{r}"]
             

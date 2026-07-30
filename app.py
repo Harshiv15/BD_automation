@@ -21,7 +21,7 @@ except ImportError as e:
     st.error(f"Failed to import required scripts. Error: {e}")
     st.stop()
 
-st.set_page_config(page_title="EY TP BD Automator", layout="wide")
+st.set_page_config(page_title="ALFA (Automated Lead & Financial Analysis)", layout="wide")
 
 # =====================================================================
 # 1. DEFINE THE STRICT JSON SCHEMA (PYDANTIC)
@@ -101,7 +101,6 @@ class CompanyData(BaseModel):
     entity: str = Field(description="Name of the company")
     fields: ExtractedFields
 
-
 # =====================================================================
 # 2. THE DUAL-EXTRACTION ENGINE (TEXT FIRST, VISION BACKUP)
 # =====================================================================
@@ -156,12 +155,25 @@ def extract_bd_data(pdf_path: str, api_key: str, company_name: str, model_name: 
 # 3. STREAMLIT UI 
 # =====================================================================
 
-st.title("TP BD Automator")
+st.title("ALFA (Automated Lead & Financial Analysis)")
 
 with st.sidebar:
     st.header("⚙️ Settings")
     api_key = st.text_input("Gemini API Key", type="password")
     model_choice = st.text_input("Model", value="gemini-flash-latest")
+
+with st.expander("How to use ALFA"):
+    st.write(
+        "ALFA is a tool to collate important financial data from ARs (Annual Reports)" \
+        "into a singular BD (Business Description) Excel workbook.\n\n" \
+        "To get started with ALFA:\n\n"
+        "1. Upload your desired BD template and all the ARs as you need synthesized, " \
+        "ensuring that each file fits in the size restrictions\n\n" \
+        "2. Paste your Gemini API key and select your preferred model\n\n"
+        "3. Click 'Start Bulk Extraction' and prepare a cup of coffee (or any other drink you enjoy)\n\n" \
+        "4. Once you return with your beverage, click 'Download Populated BD data'\n\n"
+        "5. Reward yourself with a sip of your beverage and continue with your day!"
+    )
 
 col1, col2 = st.columns(2)
 with col1:

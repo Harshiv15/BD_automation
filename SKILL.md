@@ -30,13 +30,15 @@ transaction labels, countries), **transcribe as close to verbatim from the sourc
 Short, factual, paraphrased (2-4 sentences): what the company does, listing status, segment structure. 
 
 ### Standalone / consolidated summary of operations
-- **Turnover = Total Income** (Revenue from Operations + Other Income), and **Total cost =
-  Total Expenses**, both as literally reported.
+- **Turnover = Revenue from Operations ONLY.** DO NOT include Other Income. 
+- **Total cost = Total Expenses.**
+- **Note:** Because you are excluding Other Income from Turnover, the template's calculated PBT (Turnover - Total Cost) will likely not match the AR's reported PBT. This is expected.
 - **Consolidated block**: if the company has no subsidiaries/associates/JVs, write `N/A`.
 
 ### AE / Domestic / Export revenue split
-- Base the split on **Revenue from Operations** (not Total Income).
+- Base the split on **Revenue from Operations**.
 - Check whether related parties are foreign (real AEs) or domestic.
+- **AE revenues (Sr 9)** MUST specifically be the total revenue from the **sale of services** to **non-Indian (foreign) AEs**, as disclosed in the RPT section.
 
 ### Shareholding
 - **List only DIRECTOR shareholders individually**. Group every other promoter-family member who isn't a director into one **"Other Promoters (non-director)"** row.
@@ -45,7 +47,8 @@ Short, factual, paraphrased (2-4 sentences): what the company does, listing stat
 
 ### Related party transactions (CRITICAL RULES)
 - **EXCLUDE INDIVIDUALS:** You must completely ignore any transaction where the related party is a natural person/individual (e.g., Directors, Promoters, Key Managerial Personnel). **Only extract transactions with corporate entities (Companies, LLPs, Trusts).**
-- **VERBATIM LABELS:** Use the EXACT transaction labels exactly as they appear in the AR's Related Party table (e.g., "Purchase of Assets", "Reimbursement of Expenses"). **DO NOT** append the company name or entity name to the label. Never write "Purchase of Assets - Tips Films Limited". Just write "Purchase of Assets".
+- **COLLATE BY NATURE:** If there are multiple transactions of the exact same nature (e.g., "Business Support Services" provided to three different companies), **collate them together and sum their values into one single row**. 
+- **VERBATIM LABELS:** Use the EXACT transaction labels exactly as they appear in the AR's Related Party table. **DO NOT** append the company name or entity name to the label (e.g., write "Business Support Services", never "Business Support Services - Tips Films Limited").
 - **Sign convention:** positive = amount payable BY the company TO the related party (a cost/outflow); negative = a net amount RECEIVABLE BY the company FROM the related party.
 
 ### Litigation (CRITICAL RULES)
